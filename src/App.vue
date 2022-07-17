@@ -1,5 +1,8 @@
 <template>
-  <div>app根组件</div>
+  <div class="app">
+    <!--子路由占位符 -->
+    <router-view></router-view>
+  </div>
 </template>
 
 <script>
@@ -8,4 +11,8 @@ export default {
 }
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.app {
+  height: 100%;
+}
+</style>
