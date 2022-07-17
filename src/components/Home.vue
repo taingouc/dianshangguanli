@@ -14,6 +14,8 @@ export default {
       window.sessionStorage.clear()
       // 2.跳转至登录页
       this.$router.push('/login')
+      // 3.提示消息
+      this.$message.success('退出登录！')
     }
   }
 }
