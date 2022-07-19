@@ -6,7 +6,22 @@ Vue.use(VueRouter)
 const routes = [
   { path: '/', redirect: '/login' },
   { path: '/login', component: () => import('@/components/Login') },
-  { path: '/home', component: () => import('@/components/Home') }
+  {
+    path: '/home',
+    redirect: '/welcome',
+    component: () => import('@/components/Home'),
+    children: [
+      { path: '/welcome', component: () => import('@/components/Welcome') },
+      { path: '/users', component: () => import('@/components/Users') },
+      { path: '/roles', component: () => import('@/components/Roles') },
+      { path: '/rights', component: () => import('@/components/Rights') },
+      { path: '/goods', component: () => import('@/components/Goods') },
+      { path: '/params', component: () => import('@/components/Params') },
+      { path: '/categories', component: () => import('@/components/Categories') },
+      { path: '/orders', component: () => import('@/components/Orders') },
+      { path: '/reports', component: () => import('@/components/Reports') }
+    ]
+  }
 ]
 
 const router = new VueRouter({

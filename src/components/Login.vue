@@ -68,6 +68,7 @@ export default {
             // 3.通过编程式导航跳转到后台主页，路由地址/home
             this.$router.push('/home')
           } else {
+            console.log(data)
             this.$message.error('登录失败,该用户不存在')
           }
         } catch (err) {
