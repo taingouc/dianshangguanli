@@ -1,5 +1,7 @@
 <template>
-  <div>你好,admin!</div>
+  <div>
+    <h1>你好,admin!</h1>
+  </div>
 </template>
 
 <script>

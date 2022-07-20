@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
+import 'default-passive-events'
 // 导入全局样式
 import '@/assets/css/index.css'
 // 导入element-ui
