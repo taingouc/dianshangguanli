@@ -10,7 +10,7 @@
     <el-card class="box-card">
       <el-button type="primary" @click="addClassification">添加分类</el-button>
       <!-- table表格区域 -->
-      <tree-table :data="cateList" :columns="columns" :selection-type="false" :expand-type="false" :show-index="true" index-text="#" border>
+      <tree-table :data="cateList" :columns="columns" :selection-type="false" :expand-type="false" :show-index="true" index-text="#" border :show-row-hover="false">
         <template slot="isOk" slot-scope="scope">
           <i class="el-icon-success" v-if="scope.row.cat_deleted === false" style="color: lightgreen"></i>
           <i class="el-icon-error" v-else style="color: red"></i>
@@ -21,8 +21,8 @@
           <el-tag size="mini" type="warning" v-else>三级</el-tag>
         </template>
         <template slot="isOpt" slot-scope="scope">
-          <el-button type="primary" icon="el-icon-edit" size="mini">编辑</el-button>
-          <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
+          <el-button type="primary" icon="el-icon-edit" size="mini" @click="ModifyDialog(scope.row)">编辑</el-button>
+          <el-button type="danger" icon="el-icon-delete" size="mini" @click="open(scope.row)">删除</el-button>
         </template>
       </tree-table>
       <!-- 底部分页区域 -->
@@ -41,10 +41,21 @@
           <el-cascader style="width: 100%" clearable v-model="selectedKeys" :options="parentCateList" :props="cascaderProps" @change="parentCateChanged"></el-cascader>
         </el-form-item>
       </el-form>
-
       <span slot="footer" class="dialog-footer">
         <el-button @click="addDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="addCate">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 编辑操作对话框 -->
+    <el-dialog title="修改分类" :visible.sync="ModifyDialogVisible" width="50%">
+      <el-form :model="ModifyDialogForm" :rules="ModifyDialogFormRules" ref="ModifyCateFormRef" label-width="100px">
+        <el-form-item label="分类名称:" prop="cat_name">
+          <el-input v-model="ModifyDialogForm.cat_name" clearable></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="ModifyDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="ModifyCateForm">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -110,7 +121,18 @@ export default {
         checkStrictly: 'true' // 父子节点取消选中关联，从而达到选择任意一级选项的目的
       },
       // 选中的父级分类的id数组
-      selectedKeys: []
+      selectedKeys: [],
+      // 控制编辑操作对话框显示隐藏
+      ModifyDialogVisible: false,
+      // 点击编辑获取的当前行数据
+      ModifyDialogForm: {
+        cat_id: 0, // 分类id，默认为空
+        cat_name: '' // 分类名称
+      },
+      // 编辑操作验证规则
+      ModifyDialogFormRules: {
+        cat_name: [{ required: true, message: '请输入分类名称', trigger: 'blur' }]
+      }
     }
   },
   methods: {
@@ -175,6 +197,40 @@ export default {
       this.addCateForm.cat_pid = 0
       // 清空分类的等级
       this.addCateForm.cat_level = 0
+    },
+    // 点击编辑操作按钮
+    async ModifyDialog(role) {
+      this.ModifyDialogVisible = true
+      const { data } = await this.$http.get(`categories/${role.cat_id}`)
+      if (data.meta.status !== 200) return this.$message.error('获取分类信息失败,请稍后重试！')
+      this.ModifyDialogForm.cat_id = data.data.cat_id
+      this.ModifyDialogForm.cat_name = data.data.cat_name
+    },
+    // 点击编辑对话框确定按钮
+    ModifyCateForm() {
+      this.$refs.ModifyCateFormRef.validate(async (valid) => {
+        if (!valid) return
+        const { data } = await this.$http.put(`categories/${this.ModifyDialogForm.cat_id}`, {
+          cat_name: this.ModifyDialogForm.cat_name
+        })
+        if (data.meta.status !== 200) return this.$message.error('修改分类名称失败，请稍后重试！')
+        this.$message.success('修改成功！')
+        this.getCateList()
+        this.ModifyDialogVisible = false
+      })
+    },
+    // 点击删除弹出消息框
+    async open(role) {
+      const result = await this.$confirm('此操作将永久删除该分类, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).catch((err) => err)
+      if (result === 'cancel') return this.$message.info('已取消删除操作！')
+      const { data } = await this.$http.delete(`categories/${role.cat_id}`)
+      if (data.meta.status !== 200) return this.$message.error('删除分类失败！')
+      this.$message.success('删除分类成功！')
+      this.getCateList()
     }
   },
   created() {
