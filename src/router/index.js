@@ -16,6 +16,7 @@ const routes = [
       { path: '/roles', component: () => import('@/components/Roles') },
       { path: '/rights', component: () => import('@/components/Rights') },
       { path: '/goods', component: () => import('@/components/Goods') },
+      { path: '/goods/add', component: () => import('@/components/AddGoods') },
       { path: '/params', component: () => import('@/components/Params') },
       { path: '/categories', component: () => import('@/components/Categories') },
       { path: '/orders', component: () => import('@/components/Orders') },
