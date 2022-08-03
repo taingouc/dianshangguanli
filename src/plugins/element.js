@@ -3,7 +3,7 @@ import { Button, Form, FormItem, Input, Message, Container, Header, Aside, Main 
 import { Menu, Submenu, MenuItem, Breadcrumb, BreadcrumbItem, Card, Row, Col } from 'element-ui'
 import { Table, TableColumn, Switch, Tooltip, Pagination, Dialog, MessageBox, Tag, Tree } from 'element-ui'
 import { Select, Option, Cascader, Alert, Tabs, TabPane, Steps, Step, Checkbox, CheckboxGroup } from 'element-ui'
-
+import { Upload, Timeline, TimelineItem } from 'element-ui'
 Vue.use(Button)
 Vue.use(Form)
 Vue.use(FormItem)
@@ -38,6 +38,9 @@ Vue.use(Steps)
 Vue.use(Step)
 Vue.use(Checkbox)
 Vue.use(CheckboxGroup)
+Vue.use(Upload)
+Vue.use(Timeline)
+Vue.use(TimelineItem)
 
 // 弹框组价挂载到Vue实例的原型对象上，使用this.$message即可全局使用
 Vue.prototype.$message = Message

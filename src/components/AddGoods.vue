@@ -50,15 +50,29 @@
               <el-input v-model="item.attr_vals"></el-input>
             </el-form-item>
           </el-tab-pane>
-          <el-tab-pane label="商品图片" name="3">商品图片</el-tab-pane>
-          <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
+          <el-tab-pane label="商品图片" name="3">
+            <!-- action表示图片要上传到到的地址 -->
+            <el-upload action="http://127.0.0.1:8888/api/private/v1/upload" :on-preview="handlePreview" :on-remove="handleRemove" list-type="picture" :headers="headersObj" :on-success="handleSuccess">
+              <el-button size="small" type="primary">点击上传</el-button>
+            </el-upload>
+          </el-tab-pane>
+          <el-tab-pane label="商品内容" name="4">
+            <!-- 富文本编辑器 -->
+            <quill-editor v-model.lazy="addForm.goods_introduce"> </quill-editor>
+            <el-button type="primary" style="margin-top: 15px" @click="add">添加商品</el-button>
+          </el-tab-pane>
         </el-tabs>
       </el-form>
     </el-card>
+    <!-- 图片预览 -->
+    <el-dialog title="图片预览" :visible.sync="previewVisible" width="50%">
+      <img :src="previewPath" alt="" class="previewImg" />
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import _ from 'lodash'
 export default {
   name: 'AddGoods',
   data() {
@@ -70,7 +84,10 @@ export default {
         goods_price: null,
         goods_weight: null,
         goods_number: null,
-        goods_cat: [] // 级联选择器选择对象
+        goods_cat: [], // 级联选择器选择对象
+        pics: [], // 图片数组
+        goods_introduce: '', // 商品的详情秒速
+        attrs: []
       },
       // 表单的验证规则
       addFormRules: {
@@ -92,7 +109,13 @@ export default {
       // 动态参数数据
       manyTableData: [],
       // 静态属性数据
-      onlyTableData: []
+      onlyTableData: [],
+      // 图片上传组件的headers请求头对象
+      headersObj: {
+        Authorization: window.sessionStorage.getItem('token')
+      },
+      previewPath: '',
+      previewVisible: false
     }
   },
   methods: {
@@ -138,6 +161,49 @@ export default {
         if (data.meta.status !== 200) return this.$message.error('获取商品属性失败！')
         this.onlyTableData = data.data
       }
+    },
+    // 处理图片预览效果
+    handlePreview(file) {
+      this.previewPath = file.response.data.url
+      this.previewVisible = true
+    },
+    // 处理移除图片操作
+    handleRemove(file) {
+      const filePath = file.response.data.tmp_path
+      const i = this.addForm.pics.findIndex((x) => x.pic === filePath)
+      this.addForm.pics.splice(i, 1)
+    },
+    // 图片上传成功时调用
+    handleSuccess(response) {
+      const picInfo = { pic: response.data.tmp_path }
+      this.addForm.pics.push(picInfo)
+    },
+    // 添加商品
+    add() {
+      this.$refs.ruleFormRef.validate(async (valid) => {
+        if (!valid) {
+          return this.$message.error('请填写必要的表单项！')
+        }
+        // 深拷贝
+        const form = _.cloneDeep(this.addForm)
+        form.goods_cat = form.goods_cat.join(',')
+        // 处理动态参数
+        this.manyTableData.forEach((item) => {
+          const newInfo = { attr_id: item.attr_id, attr_value: item.attr_vals.join(',') }
+          this.addForm.attrs.push(newInfo)
+        })
+        // 处理静态属性
+        this.onlyTableData.forEach((item) => {
+          const newInfo = { attr_id: item.attr_id, attr_value: item.attr_vals }
+          this.addForm.attrs.push(newInfo)
+        })
+        form.attrs = this.addForm.attrs
+        // 发起请求添加商品，商品名称必须唯一
+        const { data } = await this.$http.post('goods', form)
+        if (data.meta.status !== 201) return this.$message.error('添加商品失败！')
+        this.$message.success('添加商品成功！')
+        this.$router.push('/goods')
+      })
     }
   },
   computed: {
@@ -163,5 +229,11 @@ export default {
 }
 .el-checkbox {
   margin: 0;
+}
+.previewImg {
+  width: 100%;
+}
+/deep/.ql-editor {
+  min-height: 300px;
 }
 </style>
